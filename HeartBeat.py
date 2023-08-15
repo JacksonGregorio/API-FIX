@@ -72,15 +72,19 @@ class FixClientHeartbeat:
         else:
             print("No data received.")
 
+    def send_heartbeat_and_receive_response(self):
+        self.logon()
+        try:
+            while True:
+                self.send_heartbeat()
+                self.receive_heartbeat_response()
+                time.sleep(1)
+                break
+        except KeyboardInterrupt:
+            pass
+        finally:
+            self.close_connection()
+
 if __name__ == "__main__":
     client = FixClientHeartbeat("fixapidcrd.squaredfinancial.com", 10210, "MD019", "DCRD", "100019", "87MTgLw345dfb!")
-    client.logon()
-    try:
-        while True:
-            client.send_heartbeat()
-            client.receive_heartbeat_response()
-            time.sleep(30)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        client.close_connection()
+    client.send_heartbeat_and_receive_response()

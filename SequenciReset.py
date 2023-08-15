@@ -3,7 +3,7 @@ import simplefix
 from datetime import datetime
 import time
 
-class FixClient:
+class FixClientSequenciReset:
 
     def __init__(self, server, port, sender_comp_id, target_comp_id, username, password):
         self.server = server
@@ -57,8 +57,8 @@ class FixClient:
                 msg_type = msg.get(35)
                 if msg_type:
                     msg_type = msg_type
-                    print(f"Received FIX message: {msg}")
-                    if msg_type == b"4":  # Sequence Reset
+                    print(f"Received FIX message Sequenci Reset: {msg}")
+                    if msg_type == b"4":
                         gap_fill_flag = msg.get(123)
                         if gap_fill_flag and gap_fill_flag == b"Y":
                             new_seq_num = msg.get(36)
@@ -66,18 +66,16 @@ class FixClient:
                                 self.msg_seq_num = int(new_seq_num)
                                 print(f"Updated sequence number to {self.msg_seq_num}")
                 break
-        else:
-            print("No data received.")
         
 
     def close_connection(self):
         self.sock.close()
 
 if __name__ == "__main__":
-    pricing_client = FixClient("fixapidcrd.squaredfinancial.com", 10210, "MD019", "DCRD", "100019", "87MTgLw345dfb!")
+    pricing_client = FixClientSequenciReset("fixapidcrd.squaredfinancial.com", 10210, "MD019", "DCRD", "100019", "87MTgLw345dfb!")
     pricing_client.logon()
 
-    trading_client = FixClient("fixapidcrd.squaredfinancial.com", 10211, "TD019", "DCRD", "100019", "87MTgLw23wfe!")
+    trading_client = FixClientSequenciReset("fixapidcrd.squaredfinancial.com", 10211, "TD019", "DCRD", "100019", "87MTgLw23wfe!")
     trading_client.logon()
 
     try:

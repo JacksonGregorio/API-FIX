@@ -3,7 +3,7 @@ import simplefix
 from datetime import datetime
 import time
 
-class FixClient:
+class FixClientLogoutTest:
 
     def __init__(self, server, port, sender_comp_id, target_comp_id, username, password):
         self.server = server
@@ -58,22 +58,22 @@ class FixClient:
         print("Sent Logout message.")
 
         response = self.sock.recv(8192)
-        print(f"Received Logout response{response.decode()}")
+        print(f"Received Logout response Logout Test{response.decode()}")
 
     def close_connection(self):
         self.sock.close()
 
 if __name__ == "__main__":
     
-    pricing_client = FixClient("fixapidcrd.squaredfinancial.com", 10210, "MD019", "DCRD", "100019", "87MTgLw345dfb!")
+    pricing_client = FixClientLogoutTest("fixapidcrd.squaredfinancial.com", 10210, "MD019", "DCRD", "100019", "87MTgLw345dfb!")
     pricing_client.logon()
 
-    trading_client = FixClient("fixapidcrd.squaredfinancial.com", 10211, "TD019", "DCRD", "100019", "87MTgLw23wfe!")
+    trading_client = FixClientLogoutTest("fixapidcrd.squaredfinancial.com", 10211, "TD019", "DCRD", "100019", "87MTgLw23wfe!")
     trading_client.logon()
 
-    time.sleep(5)  # Wait for a few seconds for the logon messages to be processed
+    time.sleep(5)  
     
-    pricing_client.send_logout()  # Send Logout message
+    pricing_client.send_logout()  
 
     pricing_client.close_connection()
     trading_client.close_connection()

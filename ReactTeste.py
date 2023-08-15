@@ -3,7 +3,7 @@ import simplefix
 from datetime import datetime
 import time
 
-class FixClient:
+class FixClientReactTeste:
 
     def __init__(self, server, port, sender_comp_id, target_comp_id, username, password):
         self.server = server
@@ -56,7 +56,7 @@ class FixClient:
                 msg_type = msg.get(35)
                 if msg_type:
                     msg_type = msg_type.decode()
-                    print(f"Received FIX message: {msg}")
+                    print(f"Received FIX message React Test: {msg}")
                     if msg_type == "3":  # Reject message
                         ref_seq_num = msg.get(45)
                         text = "Required tag missing"
@@ -83,10 +83,10 @@ class FixClient:
         self.sock.close()
 
 if __name__ == "__main__":
-    pricing_client = FixClient("fixapidcrd.squaredfinancial.com", 10210, "MD019", "DCRD", "100019", "87MTgLw345dfb!")
+    pricing_client = FixClientReactTeste("fixapidcrd.squaredfinancial.com", 10210, "MD019", "DCRD", "100019", "87MTgLw345dfb!")
     pricing_client.logon()
 
-    trading_client = FixClient("fixapidcrd.squaredfinancial.com", 10211, "TD019", "DCRD", "100019", "87MTgLw23wfe!")
+    trading_client = FixClientReactTeste("fixapidcrd.squaredfinancial.com", 10211, "TD019", "DCRD", "100019", "87MTgLw23wfe!")
     trading_client.logon()
 
     try:

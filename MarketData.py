@@ -1,9 +1,9 @@
 import socket
 import simplefix
 from datetime import datetime
-import time
 
-class FixClient:
+class FixClientMarketDataRequest:
+
 
     def __init__(self, server, port, sender_comp_id, target_comp_id, username, password):
         self.server = server
@@ -41,74 +41,58 @@ class FixClient:
         self.fix_generator.append_pair(554, self.password)
         return self.fix_generator.encode()
 
+    def create_market_data_request_msg(self, md_req_id, symbol):
+        self.fix_generator.append_pair(8, "FIX.4.4")
+        self.fix_generator.append_pair(35, "V")
+        self.fix_generator.append_pair(34, self.msg_seq_num)
+        self.fix_generator.append_pair(49, self.sender_comp_id)
+        self.fix_generator.append_pair(56, self.target_comp_id)
+        self.fix_generator.append_pair(52, datetime.utcnow().strftime("%Y%m%d-%H:%M:%S.%f")[:-3])
+        self.fix_generator.append_pair(262, md_req_id)
+        self.fix_generator.append_pair(263, 1)
+        self.fix_generator.append_pair(264, 0)
+        self.fix_generator.append_pair(267, 2)
+        self.fix_generator.append_pair(269, "0")
+        self.fix_generator.append_pair(269, "1")
+        self.fix_generator.append_pair(146, 1)
+        self.fix_generator.append_pair(55, symbol)
+        return self.fix_generator.encode()
+
     def logon(self):
         logon_msg = self.create_logon_msg()
         self.send_fix_msg(logon_msg)
 
-    def receive_messages(self):
-        data = self.sock.recv(8192)
-        if data:
-            self.parser.append_buffer(data)
-            while True:
-                msg = self.parser.get_message()
-                if msg is None:
-                    break
-                print(f"Received FIX message: {msg}")
-                break
-        else:
-            print("No data received.")
+    def get_quote(self, md_req_id_base, symbol):
+        self.msg_seq_num += 1
+        md_req_id = f"{md_req_id_base}_{self.msg_seq_num}"
+        md_request_msg = self.create_market_data_request_msg(md_req_id, symbol)
+        self.send_fix_msg(md_request_msg)
 
+    def listen_for_quotes(self):
 
-    def create_heartbeat_msg(self):
-        self.fix_generator = simplefix.FixMessage()
-        self.fix_generator.append_pair(8, "FIX.4.4")
-        self.fix_generator.append_pair(35, "0")  # Heartbeat
-        self.fix_generator.append_pair(34, 3)  # Sequence number
-        self.fix_generator.append_pair(49, self.sender_comp_id)
-        self.fix_generator.append_pair(56, self.target_comp_id)
-        self.fix_generator.append_pair(52, datetime.utcnow().strftime("%Y%m%d-%H:%M:%S.%f")[:-3])
-        return self.fix_generator.encode()
         
-
-    def send_heartbeat(self):
-        heartbeat_msg = self.create_heartbeat_msg()
-        self.send_fix_msg(heartbeat_msg)
-    
-    def receive_heartbeat(self):
-        data = self.sock.recv(8192)
-        if data:
-            self.parser.append_buffer(data)
-            while True:
-                msg = self.parser.get_message()
-                if msg is None:
-                    break
-                msg_type = msg.get(35)
-                if msg_type and msg_type.decode() == "0":  # Heartbeat message
-                    print("Received Heartbeat message.")
-        else:
-            print("No data received.")
+        while True:
+            data = self.sock.recv(8192)
+            if data:
+                self.parser.append_buffer(data)
+                while True:
+                    msg = self.parser.get_message()
+                    if msg is None:
+                        break
+                    print(f"Received FIX message: {msg}")
 
     def close_connection(self):
         self.sock.close()
 
 if __name__ == "__main__":
-    
-    pricing_client = FixClient("fixapidcrd.squaredfinancial.com", 10210, "MD019", "DCRD", "100019", "87MTgLw345dfb!")
-    pricing_client.logon()
-
-    
-    trading_client = FixClient("fixapidcrd.squaredfinancial.com", 10211, "TD019", "DCRD", "100019", "87MTgLw23wfe!")
-    trading_client.logon()
+    client = FixClientMarketDataRequest("fixapidcrd.squaredfinancial.com", 10210, "MD019", "DCRD", "100019", "87MTgLw345dfb!")
+    client.logon()
+    client.get_quote("EURUSD_MDReqID", "EURUSD.x")
 
     try:
         while True:
-                pricing_client.send_heartbeat()
-                pricing_client.receive_heartbeat()
-                pricing_client.receive_messages()
-                pricing_client.create_logon_msg()
-                time.sleep(1)
+            bid, ask = client.listen_for_quotes()
     except KeyboardInterrupt:
         pass
     finally:
-        pricing_client.close_connection()
-        trading_client.close_connection()
+        client.close_connection()

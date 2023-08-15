@@ -15,14 +15,9 @@ class FixClient:
         self.username = username
         self.password = password
         self.parser = simplefix.FixParser()
-        self.sock = self.connect_to_stunnel()
         self.msg_seq_num = 1
         #self.unique_clordid = 0
 
-    def connect_to_stunnel(self):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect((self.server, self.port))
-        return sock
 
     def calculate_checksum(self, message):
         return '{:03d}'.format(sum(message) % 256)
@@ -66,39 +61,8 @@ class FixClient:
     def send_message(self, msg):
         # Incrementa o número de sequência para a próxima mensagem
         self.msg_seq_num += 1
-        self.sock.sendall(msg)
-        print(f"Cancel Order: {msg}")
+        print(f"Sent: {msg}")
 
-    def create_heartbeat_msg(self):
-        message = simplefix.FixMessage()
-
-        # Append Body tags
-        message.append_pair(35, "0")  # MsgType for Heartbeat
-        message.append_pair(49, self.sender_comp_id)  # SenderCompID
-        message.append_pair(56, self.target_comp_id)  # TargetCompID
-        message.append_pair(34, self.msg_seq_num)  # MsgSeqNum
-        message.append_pair(52, datetime.utcnow().strftime("%Y%m%d-%H:%M:%S"))  # SendingTime
-
-        # Encode the body part
-        encoded_body = b''.join([f"{tag}={value}\x01".encode() for tag, value in message.pairs])
-
-        # Calculate BodyLength (tag 9)
-        body_length = len(encoded_body)
-
-        # Build the final message
-        final_message = simplefix.FixMessage()
-        final_message.append_pair(8, "FIX.4.4")  # BeginString
-        final_message.append_pair(9, str(body_length))  # BodyLength
-        # Append the body
-        for tag, value in message.pairs:
-            final_message.append_pair(tag, value)
-
-        # Calculate the checksum manually
-        encoded_msg_without_checksum = final_message.encode()[:-7]
-        checksum = self.calculate_checksum(encoded_msg_without_checksum)
-        final_message.append_pair(10, checksum)  # CheckSum
-
-        return final_message.encode()
 
     def receive_messages(self):
         last_heartbeat_time = time.time()
@@ -311,7 +275,7 @@ if __name__ == '__main__':
     client.send_message(logon_msg)
     client2 = FixClientQuotes("fixapidcrd.squaredfinancial.com", 10210, "MD019", "DCRD", "100019", "87MTgLw345dfb!")
     client2.logon()
-    client2.get_quote("EURUSD_MDReqID", "EURUSD.x")
+    client2.get_quote("EUxxx_MDReqID", "Exxxxx.x")
 
     # Aguardar alguns segundos para garantir que o logon seja bem-sucedido antes de enviar a ordem
     time.sleep(5)
@@ -339,7 +303,7 @@ if __name__ == '__main__':
         side="1"
     )
     client.send_message(cancel_msg)
-    client.receive_messages()
+    #client.receive_messages()
     #time.sleep(30)
     #new_order_msg = client.create_new_order_single_msg_opposite(
         #symbol="EURUSD.x",
