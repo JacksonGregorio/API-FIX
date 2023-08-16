@@ -323,14 +323,14 @@ if __name__ == '__main__':
     point = 0.00001
     SL = 0.00010
     TP = 0.00040
-    #new_order_msg, original_clordid = client.create_new_order_single_msg(
-        #symbol="EURUSD.x",
-        #side="1",
-        #order_qty="1000000",
-        #ord_type="1",
-        #price=ask + point
-    #)
-    #client.send_message(new_order_msg)
+    new_order_msg, original_clordid = client.create_new_order_single_msg(
+        symbol="EURUSD.x",
+        side="1",
+        order_qty="1000000",
+        ord_type="1",
+        price=ask + point
+    )
+    client.send_message(new_order_msg)
     price_used = ask + point
     cancel_msg = client.create_order_cancel_msg(
         clordid="unique_id_12343",
@@ -340,15 +340,15 @@ if __name__ == '__main__':
     )
     client.send_message(cancel_msg)
     client.receive_messages()
-    #time.sleep(30)
-    #new_order_msg = client.create_new_order_single_msg_opposite(
-        #symbol="EURUSD.x",
-        #side="2",
-        #order_qty="1000000",
-        #ord_type="2",
-        #price=price_used + TP
-    #)
-    #client.send_message(new_order_msg)
+    time.sleep(5)
+    new_order_msg = client.create_new_order_single_msg_opposite(
+        symbol="EURUSD.x",
+        side="2",
+        order_qty="1000000",
+        ord_type="2",
+        price=price_used + TP
+    )
+    client.send_message(new_order_msg)
     # Espere 30 segundos antes de enviar a requisição de alteração de ordem
     time.sleep(30)
     status_request_msg = client.create_order_status_request_msg(

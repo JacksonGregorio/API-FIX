@@ -117,6 +117,30 @@ print("End Sequenci Test")
 
 time.sleep(1)
 
+def run_fix_clients():
+    pricing_client = FixClientBusinessReject("fixapidcrd.squaredfinancial.com", 10210, "MD019", "DCRD", "100019", "87MTgLw345dfb!")
+    pricing_client.logon()
+
+    trading_client = FixClientBusinessReject("fixapidcrd.squaredfinancial.com", 10211, "TD019", "DCRD", "100019", "87MTgLw23wfe!")
+    trading_client.logon()
+
+    try:
+        while True:
+            pricing_client.receive_messages()
+            pricing_client.create_logon_msg()
+            time.sleep(1)
+    except KeyboardInterrupt:
+        pricing_client.close_connection()
+        trading_client.close_connection()
+
+if __name__ == "__main__":
+    run_fix_clients()
+
+print("End Sequenci Test")
+
+time.sleep(1)
+
+
 def run_react_test_clients():
     pricing_client = FixClientReactTeste("fixapidcrd.squaredfinancial.com", 10210, "MD019", "DCRD", "100019", "87MTgLw345dfb!")
     pricing_client.logon()
