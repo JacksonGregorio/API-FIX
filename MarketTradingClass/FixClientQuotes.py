@@ -2,6 +2,7 @@ import socket
 import simplefix
 from datetime import datetime
 import time
+from Create_heartbeat_msg import CreateHeartBeatMessage
 
 class FixClientQuotes:
 
@@ -60,6 +61,88 @@ class FixClientQuotes:
         self.fix_generator.append_pair(146, 1)  # NoRelatedSym
         self.fix_generator.append_pair(55, symbol)  # Symbol (e.g., "EURUSD.x")
         return self.fix_generator.encode()
+    
+    def create_market_data_request_msg_sub2(self, md_req_id, symbol):
+        self.fix_generator = simplefix.FixMessage()
+        self.fix_generator.append_pair(8, "FIX.4.4")
+        self.fix_generator.append_pair(35, "V")  # Market Data Request
+        self.fix_generator.append_pair(34, self.msg_seq_num)  # Use the current sequence number
+        self.fix_generator.append_pair(49, self.sender_comp_id)
+        self.fix_generator.append_pair(56, self.target_comp_id)
+        self.fix_generator.append_pair(52, datetime.utcnow().strftime("%Y%m%d-%H:%M:%S.%f")[:-3])
+
+        self.fix_generator.append_pair(262, md_req_id)  # MDReqID
+        self.fix_generator.append_pair(263, "1")  # SubscriptionRequestType (Snapshot + Updates)
+        self.fix_generator.append_pair(264, "0")  # MarketDepth
+        self.fix_generator.append_pair(265, "0")  # MDUpdateType (Full Refresh)
+
+        # Bid and Ask entries
+        self.fix_generator.append_pair(267, "2")  # NoMDEntryTypes
+        self.fix_generator.append_pair(269, "0")  # MDEntryType (Bid)
+        self.fix_generator.append_pair(269, "1")  # MDEntryType (Offer)
+
+        self.fix_generator.append_pair(146, "1")  # NoRelatedSym
+        self.fix_generator.append_pair(55, symbol)  # Symbol (e.g., "EURUSD.x")
+        return self.fix_generator.encode()
+    
+    def create_market_data_request_msg_Snapshot(self, md_req_id, symbol):
+        fix_generator = simplefix.FixMessage()
+        fix_generator.append_pair(8, "FIX.4.4")
+        fix_generator.append_pair(35, "V")  # Market Data Request
+        fix_generator.append_pair(34, self.msg_seq_num)
+        fix_generator.append_pair(49, self.sender_comp_id)
+        fix_generator.append_pair(56, self.target_comp_id)
+        fix_generator.append_pair(52, datetime.utcnow().strftime("%Y%m%d-%H:%M:%S.%f")[:-3])
+        fix_generator.append_pair(262, md_req_id)
+        fix_generator.append_pair(263, "1")  # SubscriptionRequestType (Snapshot + Updates)
+        fix_generator.append_pair(264, "0")  # MarketDepth
+        fix_generator.append_pair(265, "0")  # MDUpdateType (Full Refresh)
+        fix_generator.append_pair(267, "2")  # NoMDEntryTypes
+        fix_generator.append_pair(269, "0")  # MDEntryType (Bid)
+        fix_generator.append_pair(269, "1")  # MDEntryType (Offer)
+        fix_generator.append_pair(146, "1")  # NoRelatedSym
+        fix_generator.append_pair(55, symbol)  # Symbol (e.g., "EURUSD.x")
+        return fix_generator.encode()
+    
+    def create_market_data_request_msg_multiple_depth(self, md_req_id, symbol):
+        fix_generator = simplefix.FixMessage()
+        fix_generator.append_pair(8, "FIX.4.4")
+        fix_generator.append_pair(35, "V")  # Market Data Request
+        fix_generator.append_pair(34, self.msg_seq_num)
+        fix_generator.append_pair(49, self.sender_comp_id)
+        fix_generator.append_pair(56, self.target_comp_id)
+        fix_generator.append_pair(52, datetime.utcnow().strftime("%Y%m%d-%H:%M:%S.%f")[:-3])
+        fix_generator.append_pair(262, md_req_id)
+        fix_generator.append_pair(263, "1")  # SubscriptionRequestType (Snapshot + Updates)
+        fix_generator.append_pair(264, "1")  # MarketDepth (substituído para um valor fixo)
+        fix_generator.append_pair(265, "0")  # MDUpdateType (Full Refresh)
+
+        fix_generator.append_pair(267, "2")  # NoMDEntryTypes
+        fix_generator.append_pair(269, "0")  # MDEntryType (Bid)
+        fix_generator.append_pair(269, "1")  # MDEntryType (Offer)
+
+        fix_generator.append_pair(146, "1")  # NoRelatedSym
+        fix_generator.append_pair(55, symbol)  # Symbol (e.g., "EURUSD.x")
+        return fix_generator.encode()
+    
+    def create_market_data_unsubscribe_msg(self, md_req_id, symbol):
+        fix_generator = simplefix.FixMessage()
+        fix_generator.append_pair(8, "FIX.4.4")
+        fix_generator.append_pair(35, "V")  # Market Data Request
+        fix_generator.append_pair(34, self.msg_seq_num)
+        fix_generator.append_pair(49, self.sender_comp_id)
+        fix_generator.append_pair(56, self.target_comp_id)
+        fix_generator.append_pair(52, datetime.utcnow().strftime("%Y%m%d-%H:%M:%S.%f")[:-3])
+        fix_generator.append_pair(262, md_req_id)
+        fix_generator.append_pair(263, "2")  # SubscriptionRequestType (Unsubscribe)
+        fix_generator.append_pair(264, "0")  # MarketDepth
+        fix_generator.append_pair(267, "1")  # NoMDEntryTypes
+        fix_generator.append_pair(269, "2")  # MDEntryType (Trade)
+        fix_generator.append_pair(146, "1")  # NoRelatedSym
+        fix_generator.append_pair(55, symbol)  # Symbol (e.g., "EURUSD.x")
+        return fix_generator.encode()
+    
+    
 
     def logon(self):
         logon_msg = self.create_logon_msg()
@@ -87,6 +170,101 @@ class FixClientQuotes:
                         return self.process_market_data_snapshot(msg)
             else:
                 break
+
+
+    def get_quote_sub2(self, md_req_id_base, symbol):
+        self.msg_seq_num += 1  # Increment the sequence number for each new message
+        md_req_id = f"{md_req_id_base}_{self.msg_seq_num}"  # Append unique sequence number to base md_req_id
+        md_request_msg = self.create_market_data_request_msg_sub2(md_req_id, symbol)
+        self.send_fix_msg(md_request_msg)
+
+    def listen_for_quotes_sub2(self):
+        while True:
+            data = self.sock.recv(8192)
+            if data:
+                self.parser.append_buffer(data)
+                while True:
+                    msg = self.parser.get_message()
+                    if msg is None:
+                        break
+                    print(f"Received FIX message: {msg}")
+
+                    msg_type = msg.get(35)
+                    if msg_type and msg_type.decode() == "W":  # Market Data Snapshot / Full Refresh
+                        return self.process_market_data_snapshot(msg)
+            else:
+                break
+
+    def get_quote_multi(self, md_req_id_base, symbol):
+        self.msg_seq_num += 1  # Increment the sequence number for each new message
+        md_req_id = f"{md_req_id_base}_{self.msg_seq_num}"  # Append unique sequence number to base md_req_id
+        md_request_msg = self.create_market_data_request_msg_multiple_depth(md_req_id, symbol)
+        self.send_fix_msg(md_request_msg)
+
+    def listen_for_quotes_multi(self):
+        while True:
+            data = self.sock.recv(8192)
+            if data:
+                self.parser.append_buffer(data)
+                while True:
+                    msg = self.parser.get_message()
+                    if msg is None:
+                        break
+                    print(f"Received FIX message: {msg}")
+
+                    msg_type = msg.get(35)
+                    if msg_type and msg_type.decode() == "W":  # Market Data Snapshot / Full Refresh
+                        return self.process_market_data_snapshot(msg)
+            else:
+                break
+
+    def get_quote_unsubscribe(self, md_req_id_base, symbol):
+        self.msg_seq_num += 1  # Increment the sequence number for each new message
+        md_req_id = f"{md_req_id_base}_{self.msg_seq_num}"  # Append unique sequence number to base md_req_id
+        md_request_msg = self.create_market_data_unsubscribe_msg(md_req_id, symbol)
+        self.send_fix_msg(md_request_msg)
+
+    def listen_for_quotes_unsubscribe(self):
+        while True:
+            data = self.sock.recv(8192)
+            if data:
+                self.parser.append_buffer(data)
+                while True:
+                    msg = self.parser.get_message()
+                    if msg is None:
+                        break
+                    print(f"Received FIX message: {msg}")
+
+                    msg_type = msg.get(35)
+                    if msg_type and msg_type.decode() == "W":  # Market Data Snapshot / Full Refresh
+                        return self.process_market_data_snapshot(msg)
+            else:
+                break
+
+
+    def get_quote_Snapshot(self, md_req_id_base, symbol):
+        self.msg_seq_num += 1  # Increment the sequence number for each new message
+        md_req_id = f"{md_req_id_base}_{self.msg_seq_num}"  # Append unique sequence number to base md_req_id
+        md_request_msg = self.create_market_data_request_msg_sub2(md_req_id, symbol)
+        self.send_fix_msg(md_request_msg)
+
+    def listen_for_quotes_Snapshot(self):
+        while True:
+            data = self.sock.recv(8192)
+            if data:
+                self.parser.append_buffer(data)
+                while True:
+                    msg = self.parser.get_message()
+                    if msg is None:
+                        break
+                    print(f"Received FIX message: {msg}")
+
+                    msg_type = msg.get(35)
+                    if msg_type and msg_type.decode() == "W":  # Market Data Snapshot / Full Refresh
+                        return self.process_market_data_snapshot(msg)
+            else:
+                break
+
 
     def process_market_data_snapshot(self, msg):
         symbol = msg.get(55)
@@ -121,22 +299,6 @@ class FixClientQuotes:
 
         return bid_price, ask_price
 
-    def create_heartbeat_msg(self):
-        self.fix_generator = simplefix.FixMessage()
-        self.fix_generator.append_pair(8, "FIX.4.4")
-        self.fix_generator.append_pair(35, "0")  # Heartbeat
-        self.fix_generator.append_pair(34, 3)  # Sequence number
-        self.fix_generator.append_pair(49, self.sender_comp_id)
-        self.fix_generator.append_pair(56, self.target_comp_id)
-        self.fix_generator.append_pair(52, datetime.utcnow().strftime("%Y%m%d-%H:%M:%S.%f")[:-3])
-        return self.fix_generator.encode()
-
-    def send_heartbeat(self):
-        heartbeat_msg = self.create_heartbeat_msg()
-        self.send_fix_msg(heartbeat_msg)
-
-    def close_connection(self):
-        self.sock.close()
 
 
 if __name__ == "__main__":
@@ -152,7 +314,7 @@ if __name__ == "__main__":
             print(f"Bid: {bid}, Ask: {ask}")
 
             if int(time.time()) % 30 == 0:
-                client.send_heartbeat()
+                CreateHeartBeatMessage.create_heartbeat_msg("fixapidcrd.squaredfinancial.com", 10210, "MD019", "DCRD", "100019", "87MTgLw345dfb!")
     except KeyboardInterrupt:
         pass
     finally:

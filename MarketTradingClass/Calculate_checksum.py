@@ -13,9 +13,8 @@ class CalculateCheck:
         self.password = password
         self.parser = simplefix.FixParser()
         self.fix_generator = simplefix.FixMessage()
-        self.sock = self.connect_to_fix_server()
         self.msg_seq_num = 1
         self.login_successful = False
 
-    def calculate_checksum(self, message):
+    def calculate_checksum(message):
         return '{:03d}'.format(sum(message) % 256)

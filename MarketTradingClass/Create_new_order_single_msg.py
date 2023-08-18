@@ -2,21 +2,10 @@ import socket
 from datetime import datetime
 import simplefix
 import time
+from Calculate_checksum import CalculateCheck
 
 class CreateOrderSingle:
 
-    def __init__(self, server, port, sender_comp_id, target_comp_id, username, password):
-        self.server = server
-        self.port = port
-        self.sender_comp_id = sender_comp_id
-        self.target_comp_id = target_comp_id
-        self.username = username
-        self.password = password
-        self.parser = simplefix.FixParser()
-        self.fix_generator = simplefix.FixMessage()
-        self.sock = self.connect_to_fix_server()
-        self.msg_seq_num = 1
-        self.login_successful = False
 
     def create_new_order_single_msg(self, symbol, side, order_qty, ord_type, price=None):
         message = simplefix.FixMessage()
@@ -61,7 +50,7 @@ class CreateOrderSingle:
 
         # Calculate the checksum manually
         encoded_msg_without_checksum = final_message.encode()[:-7]
-        checksum = self.calculate_checksum(encoded_msg_without_checksum)
+        checksum = CalculateCheck.calculate_checksum(encoded_msg_without_checksum)
         final_message.append_pair(10, checksum)  # CheckSum
 
         return final_message.encode(), unique_clordid
