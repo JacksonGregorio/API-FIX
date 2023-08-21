@@ -33,7 +33,7 @@ class FixApiClient:
     self.target_comp_id = default_credentials["target_comp_id"]
     self.pricing_session = self.get_pricing_session()
     self.trading_session = self.get_trading_session()
-    self.sequence_number = 0
+    self.sequence_number = 1
 
   @staticmethod
   def get_fix_message():
@@ -48,11 +48,10 @@ class FixApiClient:
   def _get_session(self, credentials):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((self.server, credentials["port"]))
-
     return sock
 
-  def send_message(self, session, parameters):
-    fix_message = self.build_message(parameters)
+  def send_message(self, session, **kwargs):
+    fix_message = self.build_message(**kwargs)
     
     try:
       session.sendall(fix_message)
@@ -66,91 +65,93 @@ class FixApiClient:
 
     return self.listen_to_response(session)
 
-  def send_pricing_session(self, parameters):
-    parameters += [f"49={pricing_session_credentials['sender_comp_id']}"]
+  def send_pricing_session(self, **kwargs):
+    headers = kwargs.get('headers') or []
+    parameters = kwargs.get('parameters') or []
+    headers += [f"49={pricing_session_credentials['sender_comp_id']}"]
 
-    return self.send_message(self.pricing_session, parameters)
+    return self.send_message(session=self.pricing_session, headers=headers, parameters=parameters)
 
-  def send_trading_session(self, parameters):
-    parameters += [f"49={trading_session_credentials['sender_comp_id']}"]
+  # def send_trading_session(self, parameters):
+  #   parameters += [f"49={trading_session_credentials['sender_comp_id']}"]
 
-    return self.send_message(self.trading_session, parameters)
+  #   return self.send_message(self.trading_session, parameters)
 
   def listen_to_response(self, session):
     parser = simplefix.parser.FixParser()
+
     data = session.recv(8192)
 
-    print(data)
+    parser.append_buffer(data)
 
-    if data:
-      parser.append_buffer(data)
-      while True:
-        msg = parser.get_message()
-        if msg is None:
-            break
-        print(f"Received FIX message: {msg}")
-        break
-    # if not data:
-    #   return None
+    return parser.get_message()
 
-    # parser.append_buffer(data)
+  def build_message(self, **kwargs):
+    headers = kwargs.get('headers')
+    parameters = kwargs.get('parameters')
 
-    # return parser.get_message()
-
-  def build_message(self, parameters):
     fix_message = self.get_fix_message()
     fix_message.append_pair(8, "FIX.4.4")
     fix_message.append_pair(56, self.target_comp_id)
     fix_message.append_pair(34, self.sequence_number)
     fix_message.append_time(52)
+    fix_message.append_strings(headers, header=True)
 
     fix_message.append_strings(parameters)
 
     return fix_message.encode()
 
   def heartbeat(self):
-    parameters = ["35=0"]
+    headers = ["35=0"]
 
-    return self.send_pricing_session(parameters)
+    return self.send_pricing_session(headers=headers)
 
   def test_request(self):
-    parameters = ["35=1", f"112={uuid4()}"]
-    return self.send_pricing_session(parameters)
+    headers = ["35=1"]
+    parameters = [f"112={uuid4()}"]
+    return self.send_pricing_session(headers=headers, parameters=parameters)
 
   def logon(self):
-    parameters = [
+    headers = [
       "35=A",
+    ]
+
+    parameters = [
       "98=0",
-      "108=60",
+      "108=30",
       "141=Y",
       f"553={self.username}",
       f"554={pricing_session_credentials['password']}",
     ]
 
-    return self.send_pricing_session(parameters)
+    return self.send_pricing_session(headers=headers, parameters=parameters)
 
   def logout(self):
-    parameters = ["35=5"]
+    headers = ["35=5"]
 
-    return self.send_pricing_session(parameters)
+    return self.send_pricing_session(headers=headers)
 
   def resend_request(self):
-    parameters = ["35=2", "7=0", "16=0"]
+    headers = ["35=2"]
+    parameters = ["7=0", "16=0"]
 
-    return self.send_pricing_session(parameters)
+    return self.send_pricing_session(headers=headers, parameters=parameters)
 
   def reject(self):
-    parameters = ["35=3", "45=1"]
+    headers = ["35=3"]
+    parameters = ["45=1"]
 
-    return self.send_pricing_session(parameters)
+    return self.send_pricing_session(headers=headers, parameters=parameters)
 
   def business_reject(self):
+    headers = ["35=j"]
     """Preciso entender melhor oq é isso e quando é usado"""
-    parameters = ["35=j", "45=1"]
+    parameters = ["45=1"]
 
-    return self.send_pricing_session(parameters)
+    return self.send_pricing_session(headers=headers, parameters=parameters)
 
   def sequence_reset(self):
-    parameters = ["35=4", "36=0"]
+    headers = ["35=4"]
+    parameters = ["36=1"]
 
-    return self.send_pricing_session(parameters)
+    return self.send_pricing_session(headers=headers, parameters=parameters)
