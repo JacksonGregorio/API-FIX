@@ -1,7 +1,17 @@
 import time
-from uuid import uuid4
+# from uuid import uuid4
 
 from fix_api_client import FixApiClient
+
+
+def execute(func):
+    start_time = time.time()
+    func()
+    end_time = time.time()
+    elapsed_time = (end_time - start_time) * 1000
+
+    return elapsed_time
+
 
 if __name__ == '__main__':
     fix_api_client = FixApiClient()
@@ -33,16 +43,19 @@ if __name__ == '__main__':
     # print(f"logout: {fix_api_client.logout()}")
 
     # Market Data Requests
-    start_time = time.perf_counter()
-    print(f"market_data_request: {fix_api_client.market_data_request('EURUSD.x')}")
-    end_time = time.perf_counter()
-    execution_time_milliseconds = (end_time - start_time) * 1000
+    responses_execution_time = []
 
-    whole_milliseconds = int(execution_time_milliseconds)
+    for i in range(10):
+        responses_execution_time.append(execute(lambda: fix_api_client.market_data_request('EURUSD.x')))
+        time.sleep(.2)
 
-    print(f"{whole_milliseconds:02}ms")
+    average = sum(responses_execution_time) / len(responses_execution_time)
+    print(f"Average execution time: {average}ms")
 
-    time.sleep(.2)
+    # print(f"market_data_request: {fix_api_client.market_data_request('EURUSD.x')}")
+
+
+    # time.sleep(.2)
 
     # print(f"market_data_request: {fix_api_client.market_data_request('WRONG_SYMBOL')}")
     # time.sleep(.2)
