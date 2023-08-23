@@ -43,17 +43,10 @@ if __name__ == '__main__':
     # print(f"logout: {fix_api_client.logout()}")
 
     # Market Data Requests
-    responses_execution_time = []
 
-    for i in range(10):
-        responses_execution_time.append(execute(lambda: fix_api_client.market_data_request('EURUSD.x')))
-        time.sleep(.2)
+    print(f"market_data_request: {fix_api_client.market_data_request('EURUSD.x')}")
 
-    average = sum(responses_execution_time) / len(responses_execution_time)
-    print(f"Average execution time: {average}ms")
-
-    # print(f"market_data_request: {fix_api_client.market_data_request('EURUSD.x')}")
-
+    fix_api_client.listen_to_response(fix_api_client.pricing_session)
 
     # time.sleep(.2)
 

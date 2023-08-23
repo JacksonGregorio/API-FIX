@@ -1,7 +1,7 @@
-from uuid import uuid4
-
 import socket
 import simplefix
+from uuid import uuid4
+
 
 default_credentials = {
     "username": 100019,
@@ -44,11 +44,14 @@ class FixApiClient:
     def listen_to_response(session):
         parser = simplefix.parser.FixParser()
 
-        data = session.recv(8192)
+        while True:
+            data = session.recv(8192)
 
-        parser.append_buffer(data)
+            if not data:
+                break
 
-        return parser.get_message()
+            parser.append_buffer(data)
+            print(f"Received message: {parser.get_message()}")
 
     def get_pricing_session(self):
         return self._get_session(pricing_session_credentials)
@@ -73,8 +76,6 @@ class FixApiClient:
         print(f"Sending message: {fix_message}")
 
         self.sequence_number += 1
-
-        return self.listen_to_response(session)
 
     def send_pricing_session(self, **kwargs):
         headers = kwargs.get('headers') or []
