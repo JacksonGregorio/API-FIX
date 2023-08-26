@@ -1,5 +1,5 @@
 import time
-# from uuid import uuid4
+from uuid import uuid4
 
 from fix_api_client import FixApiClient
 
@@ -16,7 +16,7 @@ def execute(func):
 if __name__ == '__main__':
     fix_api_client = FixApiClient()
 
-    print(f"Logon {fix_api_client.logon()}")
+    print(f"Logon {fix_api_client.logon(trading_session=True)}")
     #
     time.sleep(.2)
     #
@@ -44,9 +44,9 @@ if __name__ == '__main__':
 
     # Market Data Requests
 
-    print(f"market_data_request: {fix_api_client.market_data_request('EURUSD.x')}")
+    # print(f"market_data_request: {fix_api_client.market_data_request('EURUSD.x')}")
 
-    fix_api_client.listen_to_response(fix_api_client.pricing_session)
+    # fix_api_client.listen_to_response(fix_api_client.pricing_session)
 
     # time.sleep(.2)
 
@@ -54,10 +54,19 @@ if __name__ == '__main__':
     # time.sleep(.2)
 
     # Duplicated id
-    # request_id = str(uuid4())
+    request_id = str(uuid4())
     #
     # print(f"market_data_request: {fix_api_client.market_data_request(request_id=request_id, symbol='EURUSD.x')}")
     # time.sleep(.2)
     #
     # print(f"market_data_request: {fix_api_client.market_data_request(request_id=request_id, symbol='EURUSD.x')}")
     # time.sleep(.2)
+
+    print(f"new_order: {fix_api_client.new_order(request_id='test', symbol='EURUSD.x')}")
+    time.sleep(.2)
+    print(f"order_status: {fix_api_client.order_status(request_id='test')}")
+
+    time.sleep(1)
+    fix_api_client.listen_to_response(fix_api_client.trading_session)
+
+

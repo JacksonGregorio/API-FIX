@@ -1,3 +1,4 @@
+from datetime import datetime
 import socket
 import simplefix
 from uuid import uuid4
@@ -18,6 +19,7 @@ pricing_session_credentials = {
 }
 
 trading_session_credentials = {
+    "account": 100019,
     "port": 10211,
     "sender_comp_id": "TD019",
     "password": "87MTgLw23wfe!",
@@ -89,7 +91,7 @@ class FixApiClient:
         parameters = kwargs.get('parameters') or []
         headers += [f"49={pricing_session_credentials['sender_comp_id']}"]
 
-        return self.send_message(session=self.trading_session, headers=headers, parameters=parameters)
+        return self.send_message(session=self.pricing_session, headers=headers, parameters=parameters)
 
     def build_message(self, **kwargs):
         headers = kwargs.get('headers')
@@ -116,7 +118,7 @@ class FixApiClient:
         parameters = [f"112={uuid4()}"]
         return self.send_pricing_session(headers=headers, parameters=parameters)
 
-    def logon(self):
+    def logon(self, trading_session=False):
         headers = [
             "35=A",
         ]
@@ -126,10 +128,20 @@ class FixApiClient:
             "108=30",
             "141=Y",
             f"553={self.username}",
-            f"554={pricing_session_credentials['password']}",
         ]
 
-        return self.send_pricing_session(headers=headers, parameters=parameters)
+        if trading_session:
+            parameters += [
+                f"554={trading_session_credentials['password']}",
+            ]
+
+            return self.send_trading_session(headers=headers, parameters=parameters)
+        else:
+            parameters += [
+                f"554={pricing_session_credentials['password']}",
+            ]
+
+            return self.send_pricing_session(headers=headers, parameters=parameters)
 
     def logout(self):
         headers = ["35=5"]
@@ -178,3 +190,31 @@ class FixApiClient:
         ]
 
         return self.send_pricing_session(headers=headers, parameters=parameters)
+
+    def new_order(self, symbol: str, request_id: str = None):
+        if not request_id:
+            request_id = uuid4()
+
+        headers = ["35=D"]
+        parameters = [
+            f"11={request_id}",
+            f"1={trading_session_credentials['account']}",
+            f"55={symbol}",
+            "54=1",
+            "38=1",
+            "40=1",
+            "59=GTC",
+            f"60={datetime.utcnow().strftime('%Y%m%d-%H:%M:%S')}",
+        ]
+
+        return self.send_trading_session(headers=headers, parameters=parameters)
+
+    def order_status(self, request_id: str = None):
+        headers = ["35=D"]
+        parameters = [
+            f"11={request_id}",
+            f"1={trading_session_credentials['account']}",
+        ]
+
+        return self.send_trading_session(headers=headers, parameters=parameters)
+
