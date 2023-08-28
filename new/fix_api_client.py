@@ -103,7 +103,7 @@ class FixApiClient:
         Min: 0.01 | Max 100
         """
         if not request_id:
-            request_id = uuid4()
+            request_id = str(uuid4())[:30]
 
         headers = ["35=D"]
 
