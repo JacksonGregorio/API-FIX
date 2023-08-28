@@ -1,17 +1,21 @@
 import asyncio
-import time
 import os
 
 from FIXConnection import FIXConnection, pricing_session_credentials, trading_session_credentials
 from fix_api_client import FixApiClient
+from price_listener import PriceListener
+from message_handler import MessageHandler
 
 if os.name == 'nt':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
 async def main():
-    pricing_connection = FIXConnection(credentials=pricing_session_credentials)
-    trading_connection = FIXConnection(credentials=trading_session_credentials)
+    price_listener = PriceListener()
+    message_handler = MessageHandler(price_listener=price_listener)
+
+    pricing_connection = FIXConnection(credentials=pricing_session_credentials, message_handler=message_handler)
+    trading_connection = FIXConnection(credentials=trading_session_credentials, message_handler=message_handler)
 
     await pricing_connection.connect()
     await trading_connection.connect()
@@ -29,7 +33,32 @@ async def main():
     print("Starting heartbeat system")
     asyncio.create_task(fix_api_client.heartbeat())
 
-    await asyncio.sleep(2)
+    await fix_api_client.market_data_request(symbol="EURUSD.x")
+
+    last_bid_price = 0
+    change_times = 0
+
+    order_bid_price = 0
+
+    while True:
+        await asyncio.sleep(1)
+        bid_price = pricing_connection.message_handler.price_listener.bid
+
+        if bid_price != last_bid_price:
+            print(f'Bid Price: {bid_price} ~ changed {change_times} times ~ last bid: {last_bid_price}')
+
+            last_bid_price = pricing_connection.message_handler.price_listener.bid
+            change_times += 1
+        
+        if change_times == 5:
+            order_bid_price = bid_price
+            print(f'Opening BUY order at {order_bid_price}')
+
+            asyncio.create_task(fix_api_client.new_order(symbol="EURUSD.x", side=1, order_type=1, lot_size=1000))
+
+            await asyncio.sleep(10)
+
+            asyncio.create_task(fix_api_client.new_order(symbol="EURUSD.x", side=2, order_type=1, lot_size=1000))
 
     # print("=========")
     #
@@ -62,7 +91,7 @@ async def main():
 
     # await asyncio.sleep(3)
 
-    print("=========")
+    # print("=========")
 
     
 
@@ -99,7 +128,7 @@ async def main():
 
     # await asyncio.sleep(4)
 
-    print("=========")
+    # print("=========")
 
 
     # print("Sending cancel order IOC")
@@ -116,8 +145,8 @@ async def main():
 
     # await fix_api_client.order_cancel(request_id=limit_fok_order, side=1)
 
-    while True:
-        await asyncio.sleep(1)
+    # while True:
+    #     await asyncio.sleep(1)
 
 
 if __name__ == '__main__':

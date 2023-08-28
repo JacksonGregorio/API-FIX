@@ -31,7 +31,9 @@ trading_session_credentials = {
 
 
 class FIXConnection:
-    def __init__(self, credentials):
+    def __init__(self, credentials, message_handler):
+        self.message_handler = message_handler
+
         self.credentials = credentials
         self.username = default_credentials["username"]
         self.target_comp_id = default_credentials["target_comp_id"]
@@ -68,8 +70,8 @@ class FIXConnection:
 
                 if not msg:
                     break
-                
-                print(f"Received {self.credentials['session']} FIX message: {msg}")
+
+                self.message_handler.on_receive_message(msg)
 
     def build_message(self, **kwargs):
         headers, parameters = self.get_message_details(**kwargs)
@@ -90,9 +92,9 @@ class FIXConnection:
     async def send_message(self, **kwargs):
         headers, parameters = self.get_message_details(**kwargs)
 
-        headers += [f"49={self.credentials['sender_comp_id']}"]
+        new_headers = headers + [f"49={self.credentials['sender_comp_id']}"]
 
-        message = self.build_message(headers=headers, parameters=parameters)
+        message = self.build_message(headers=new_headers, parameters=parameters)
 
         print(f"Sending {self.credentials['session']} message: {message}")
         await self.loop.sock_sendall(self.sock, message)

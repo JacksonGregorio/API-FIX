@@ -1,3 +1,4 @@
+import asyncio
 import random
 import time
 
@@ -29,12 +30,15 @@ class FixApiClient:
         headers = ["35=0"]
 
         while True:
-            if self.heartbeat_seconds == 25:
+            if self.heartbeat_seconds == 29:
                 await self.pricing.send_message(headers=headers)
+                await asyncio.sleep(.5)
                 await self.trading.send_message(headers=headers)
-                self.heartbeat_seconds = 0
 
-            time.sleep(1)
+                self.heartbeat_seconds = 0
+            
+            await asyncio.sleep(1)
+
             self.heartbeat_seconds += 1
 
     def test_request(self):
