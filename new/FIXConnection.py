@@ -83,6 +83,8 @@ class FIXConnection:
 
         fix_message.append_strings(parameters)
 
+        print(f"Sending message: {fix_message}")
+
         return fix_message.encode()
 
     async def send_message(self, **kwargs):

@@ -93,7 +93,15 @@ class FixApiClient:
 
         await self.pricing.send_message(headers=headers, parameters=parameters)
 
-    async def new_order(self, symbol: str, side: int, order_type: int, lot_size: int, request_id: str = None):
+    async def new_order(
+            self, symbol: str,
+            side: int, 
+            order_type: int,
+            lot_size: int,
+            price: float = None,
+            time_in_force: int = 1,
+            request_id: str = None
+        ):
         """
         Send a new order request
 
@@ -101,6 +109,11 @@ class FixApiClient:
         1000 = 0.01
         10000000 = 100
         Min: 0.01 | Max 100
+
+        time_in_force:
+        GTC = 1
+        IOC = 3
+        FOK = 4
         """
         if not request_id:
             request_id = str(uuid4())[:30]
@@ -114,7 +127,13 @@ class FixApiClient:
             f"54={side}",
             f"38={lot_size}",
             f"40={order_type}",
-            "59=1",
+            f"59={time_in_force}"
+        ]
+
+        if price:
+            parameters += [f"44={price}"]
+        
+        parameters += [
             f"60={datetime.utcnow().strftime('%Y%m%d-%H:%M:%S')}",
         ]
 
