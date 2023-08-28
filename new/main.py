@@ -1,72 +1,99 @@
+import asyncio
 import time
-from uuid import uuid4
 
+from FIXConnection import FIXConnection, pricing_session_credentials, trading_session_credentials
 from fix_api_client import FixApiClient
 
 
-def execute(func):
-    start_time = time.time()
-    func()
-    end_time = time.time()
-    elapsed_time = (end_time - start_time) * 1000
+async def main():
+    pricing_connection = FIXConnection(credentials=pricing_session_credentials)
+    trading_connection = FIXConnection(credentials=trading_session_credentials)
 
-    return elapsed_time
+    await pricing_connection.connect()
+    await trading_connection.connect()
 
+    print("Start fix api client")
+    fix_api_client = FixApiClient(pricing=pricing_connection, trading=trading_connection)
+
+    await fix_api_client.logon()
+
+    print("Start listening to messages...")
+    asyncio.create_task(pricing_connection.listen())
+
+    print("Sending heartbeat")
+    await fix_api_client.heartbeat()
+
+    time.sleep(2)
+
+    await fix_api_client.logout()
 
 if __name__ == '__main__':
-    fix_api_client = FixApiClient()
+    asyncio.run(main())
 
-    print(f"Logon {fix_api_client.logon(trading_session=True)}")
-    #
-    time.sleep(.2)
-    #
-    # print(f"heartbeat: {fix_api_client.heartbeat()}")
-    #
-    # time.sleep(.2)
-    #
-    # print(f"test_request: {fix_api_client.test_request()}")
-    #
-    # time.sleep(.2)
-    #
-    # print(f"resend_request: {fix_api_client.resend_request()}")
-    #
-    # time.sleep(.2)
-    #
-    # print(f"reject: {fix_api_client.reject()}")
-    #
-    # time.sleep(.2)
-    #
-    # print(f"sequence_reset: {fix_api_client.sequence_reset()}")
-    #
-    # time.sleep(.2)
-    #
+#
+#     print(f"Logon {fix_api_client.logon(trading_session=True)}")
+#     #
+#     time.sleep(.2)
+#     #
+#     # print(f"heartbeat: {fix_api_client.heartbeat()}")
+#     #
+#     # time.sleep(.2)
+#     #
+#     print(f"test_request: {fix_api_client.test_request()}")
+#     #
+#     # time.sleep(.2)
+#     #
+#     # print(f"resend_request: {fix_api_client.resend_request()}")
+#     #
+#     # time.sleep(.2)
+#     #
+#     # print(f"reject: {fix_api_client.reject()}")
+#     #
+#     # time.sleep(.2)
+#     #
+#     # print(f"sequence_reset: {fix_api_client.sequence_reset()}")
+#     #
+#     # time.sleep(.2)
+#     #
     # print(f"logout: {fix_api_client.logout()}")
-
-    # Market Data Requests
-
-    # print(f"market_data_request: {fix_api_client.market_data_request('EURUSD.x')}")
-
-    # fix_api_client.listen_to_response(fix_api_client.pricing_session)
-
-    # time.sleep(.2)
-
-    # print(f"market_data_request: {fix_api_client.market_data_request('WRONG_SYMBOL')}")
-    # time.sleep(.2)
-
-    # Duplicated id
-    request_id = str(uuid4())
-    #
-    # print(f"market_data_request: {fix_api_client.market_data_request(request_id=request_id, symbol='EURUSD.x')}")
-    # time.sleep(.2)
-    #
-    # print(f"market_data_request: {fix_api_client.market_data_request(request_id=request_id, symbol='EURUSD.x')}")
-    # time.sleep(.2)
-
-    print(f"new_order: {fix_api_client.new_order(request_id='test', symbol='EURUSD.x')}")
-    time.sleep(.2)
-    print(f"order_status: {fix_api_client.order_status(request_id='test')}")
-
-    time.sleep(1)
-    fix_api_client.listen_to_response(fix_api_client.trading_session)
-
-
+#
+#     # Market Data Requests
+#
+#     # print(f"market_data_request: {fix_api_client.market_data_request('EURUSD.x')}")
+#
+#     # fix_api_client.listen_to_response(fix_api_client.pricing_session)
+#
+#     # time.sleep(.2)
+#
+#     # print(f"market_data_request: {fix_api_client.market_data_request('WRONG_SYMBOL')}")
+#     # time.sleep(.2)
+#
+#     # Duplicated id
+#     request_id = str(uuid4())
+#     #
+#     # print(f"market_data_request: {fix_api_client.market_data_request(request_id=request_id, symbol='EURUSD.x')}")
+#     # time.sleep(.2)
+#     #
+#     # print(f"market_data_request: {fix_api_client.market_data_request(request_id=request_id, symbol='EURUSD.x')}")
+#     # time.sleep(.2)
+#
+#     # Market order
+#     print(f"new_order: {fix_api_client.new_order(request_id='test', symbol='EURUSD.x')}")
+#     time.sleep(5)
+#
+#     # Limit IOC
+#
+#     # Limit FOK
+#
+#     # < Min qty
+#
+#     # > Max qty
+#
+#     # Order cancel request
+#
+#     # Order cancel reject
+#
+#     print(f"order_status: {fix_api_client.order_status(request_id='test')}")
+#
+#     time.sleep(1)
+#     fix_api_client.listen_to_response(fix_api_client.trading_session)
