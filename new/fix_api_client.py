@@ -93,7 +93,15 @@ class FixApiClient:
 
         await self.pricing.send_message(headers=headers, parameters=parameters)
 
-    async def new_order(self, symbol: str, request_id: str = None):
+    async def new_order(self, symbol: str, side: int, order_type: int, lot_size: int, request_id: str = None):
+        """
+        Send a new order request
+
+        Lot size must be multiplied by 100000
+        1000 = 0.01
+        10000000 = 100
+        Min: 0.01 | Max 100
+        """
         if not request_id:
             request_id = uuid4()
 
@@ -103,14 +111,16 @@ class FixApiClient:
             f"11={request_id}",
             f"1={self.trading.credentials['account']}",
             f"55={symbol}",
-            "54=1",
-            "38=1",
-            "40=1",
+            f"54={side}",
+            f"38={lot_size}",
+            f"40={order_type}",
             "59=1",
             f"60={datetime.utcnow().strftime('%Y%m%d-%H:%M:%S')}",
         ]
 
         await self.trading.send_message(headers=headers, parameters=parameters)
+
+        return request_id
 
     async def order_cancel(self, request_id: str, side: int):
         headers = ["35=F"]

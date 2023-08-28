@@ -31,11 +31,11 @@ async def main():
     await asyncio.sleep(2)
 
     print("Sending new order message")
-    await fix_api_client.new_order(symbol="EURUSD.x", request_id='test2')
+    single_order = await fix_api_client.new_order(symbol="EURUSD.x", side=1, order_type=1, lot_size=1000)
 
     await asyncio.sleep(2)
 
-    await fix_api_client.order_cancel(request_id='test2', side=1)
+    await fix_api_client.order_cancel(request_id=single_order, side=1)
 
     await asyncio.sleep(2)
 
