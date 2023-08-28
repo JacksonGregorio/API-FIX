@@ -28,18 +28,19 @@ class FixApiClient:
             "98=0",
             "108=30",
             "141=Y",
-            f"553={self.websocket_connection.username}",
         ]
 
         if trading_session:
             parameters += [
-                f"554={trading_session_credentials['password']}",
+                f"553={self.trading.username}",
+                f"554={self.trading.credentials['password']}",
             ]
 
             await self.trading.send_message(headers=headers, parameters=parameters)
         else:
             parameters += [
-                f"554={pricing_session_credentials['password']}",
+                f"553={self.pricing.username}",
+                f"554={self.pricing.credentials['password']}",
             ]
 
             await self.pricing.send_message(headers=headers, parameters=parameters)
@@ -92,14 +93,14 @@ class FixApiClient:
 
         return self.pricing.send_message(headers=headers, parameters=parameters)
 
-    def new_order(self, symbol: str, request_id: str = None):
+    async def new_order(self, symbol: str, request_id: str = None):
         if not request_id:
             request_id = uuid4()
 
         headers = ["35=D"]
         parameters = [
             f"11={request_id}",
-            f"1={trading_session_credentials['account']}",
+            f"1={self.trading.credentials['account']}",
             f"55={symbol}",
             "54=1",
             "38=1",
@@ -108,7 +109,7 @@ class FixApiClient:
             f"60={datetime.utcnow().strftime('%Y%m%d-%H:%M:%S')}",
         ]
 
-        return self.trading.send_message(headers=headers, parameters=parameters)
+        await self.trading.send_message(headers=headers, parameters=parameters)
 
     def order_status(self, request_id: str = None):
         headers = ["35=D"]

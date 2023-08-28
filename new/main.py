@@ -16,16 +16,19 @@ async def main():
     fix_api_client = FixApiClient(pricing=pricing_connection, trading=trading_connection)
 
     await fix_api_client.logon()
+    await fix_api_client.logon(trading_session=True)
 
     print("Start listening to messages...")
     asyncio.create_task(pricing_connection.listen())
+    asyncio.create_task(trading_connection.listen())
 
     print("Sending heartbeat")
     await fix_api_client.heartbeat()
 
     time.sleep(2)
 
-    await fix_api_client.logout()
+    print("Sending trade message")
+    await fix_api_client.new_order(request_id='test', symbol='EURUSD.x')
 
 if __name__ == '__main__':
     asyncio.run(main())
