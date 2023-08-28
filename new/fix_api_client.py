@@ -1,8 +1,23 @@
+import random
+import time
+
 from datetime import datetime
-from uuid import uuid4
 
 from FIXConnection import trading_session_credentials, pricing_session_credentials
 
+def generate_unique_id():
+    chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-"
+    random_part = ''.join(random.choice(chars) for _ in range(10))
+    
+    timestamp_part = ''
+    timestamp = int(time.time() * 1_000_000)
+    while timestamp:
+        timestamp, remainder = divmod(timestamp, len(chars))
+        timestamp_part += chars[remainder]
+    
+    unique_string = random_part + timestamp_part
+    
+    return unique_string[:30]
 
 class FixApiClient:
     def __init__(self, pricing, trading):
@@ -13,10 +28,11 @@ class FixApiClient:
         headers = ["35=0"]
 
         await self.pricing.send_message(headers=headers)
+        await self.trading.send_message(headers=headers)
 
     def test_request(self):
         headers = ["35=1"]
-        parameters = [f"112={uuid4()}"]
+        parameters = [f"112={generate_unique_id()}"]
         return self.pricing.send_message(headers=headers, parameters=parameters)
 
     async def logon(self, trading_session=False):
@@ -78,7 +94,7 @@ class FixApiClient:
     # Market data requests
     async def market_data_request(self, symbol: str, request_id: str = None):
         if not request_id:
-            request_id = uuid4()
+            request_id = generate_unique_id()
 
         headers = ["35=V"]
         parameters = [
@@ -116,7 +132,7 @@ class FixApiClient:
         FOK = 4
         """
         if not request_id:
-            request_id = str(uuid4())[:30]
+            request_id = str(generate_unique_id())[:30]
 
         headers = ["35=D"]
 

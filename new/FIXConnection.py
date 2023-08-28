@@ -68,7 +68,7 @@ class FIXConnection:
 
                 if not msg:
                     break
-
+                
                 print(f"Received {self.credentials['session']} FIX message: {msg}")
 
     def build_message(self, **kwargs):

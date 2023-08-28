@@ -34,80 +34,89 @@ async def main():
 
     print("Sending market order message")
 
-    market_order = await fix_api_client.new_order(symbol="EURUSD.x", side=1, order_type=1, lot_size=1000)
+    await fix_api_client.new_order(symbol="EURUSD.x", side=1, order_type=1, lot_size=1000)
+    await asyncio.sleep(10)
+
+    print("=========")
+    
+
+    print("Sending market order message")
+
+    await fix_api_client.new_order(symbol="EURUSD.x", side=2, order_type=1, lot_size=1000)
     await asyncio.sleep(2)
 
     print("=========")
 
 
-    print("Sending limit IOC order message")
+    # print("Sending limit IOC order message")
 
-    limit_ioc_order = await fix_api_client.new_order(
-        symbol="EURUSD.x",
-        side=1,
-        order_type=2,
-        lot_size=1000,
-        price=1.08320,
-        time_in_force=3
-    )
+    # limit_ioc_order = await fix_api_client.new_order(
+    #     symbol="EURUSD.x",
+    #     side=2,
+    #     order_type=2,
+    #     lot_size=1000,
+    #     price=1.07950,
+    #     time_in_force=4,
+    # )
 
-    await asyncio.sleep(2)
+    # await asyncio.sleep(3)
 
     print("=========")
 
     
 
-    print("Sending limit FOK order message")
+    # print("Sending limit FOK order message")
 
-    limit_fok_order = await fix_api_client.new_order(
-        symbol="EURUSD.x",
-        side=1,
-        order_type=2,
-        lot_size=1000,
-        price=1.08350,
-        time_in_force=4
-    )
+    # limit_fok_order = await fix_api_client.new_order(
+    #     symbol="EURUSD.x",
+    #     side=1,
+    #     order_type=2,
+    #     lot_size=1000,
+    #     price=1.08350,
+    #     time_in_force=4
+    # )
 
-    await asyncio.sleep(2)
+    # await asyncio.sleep(2)
 
-    print("=========")
-
-    
-
-    print("Sending below limit order message")
-
-    below_limit = await fix_api_client.new_order(symbol="EURUSD.x", side=1, order_type=1, lot_size=100)
-
-    await asyncio.sleep(2)
-
-    print("=========")
+    # print("=========")
 
     
 
-    print("Sending above limit order message")
+    # print("Sending below limit order message")
 
-    below_limit = await fix_api_client.new_order(symbol="EURUSD.x", side=1, order_type=1, lot_size=1000000000)
+    # below_limit = await fix_api_client.new_order(symbol="EURUSD.x", side=1, order_type=1, lot_size=100)
 
-    await asyncio.sleep(4)
+    # await asyncio.sleep(2)
 
-    print("=========")
-
-
-    print("Sending cancel order IOC")
-    await fix_api_client.order_cancel(request_id=limit_ioc_order, side=1)
-
-    await asyncio.sleep(2)
-
-    print("=========")
-
-
-    print("Sending cancel order FOK")
+    # print("=========")
 
     
 
-    await fix_api_client.order_cancel(request_id=limit_fok_order, side=1)
+    # print("Sending above limit order message")
 
-    await asyncio.sleep(2)
+    # below_limit = await fix_api_client.new_order(symbol="EURUSD.x", side=1, order_type=1, lot_size=1000000000)
+
+    # await asyncio.sleep(4)
+
+    print("=========")
+
+
+    # print("Sending cancel order IOC")
+    # await fix_api_client.order_cancel(request_id='UmalJDvGSwQdO-ywvkB', side=2)
+
+    # await asyncio.sleep(2)
+
+    # print("=========")
+
+
+    # print("Sending cancel order FOK")
+
+    
+
+    # await fix_api_client.order_cancel(request_id=limit_fok_order, side=1)
+
+    while True:
+        await asyncio.sleep(1)
 
 
 if __name__ == '__main__':
