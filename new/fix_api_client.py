@@ -23,12 +23,19 @@ class FixApiClient:
     def __init__(self, pricing, trading):
         self.pricing = pricing
         self.trading = trading
+        self.heartbeat_seconds = 0
 
     async def heartbeat(self):
         headers = ["35=0"]
 
-        await self.pricing.send_message(headers=headers)
-        await self.trading.send_message(headers=headers)
+        while True:
+            if self.heartbeat_seconds == 25:
+                await self.pricing.send_message(headers=headers)
+                await self.trading.send_message(headers=headers)
+                self.heartbeat_seconds = 0
+
+            time.sleep(1)
+            self.heartbeat_seconds += 1
 
     def test_request(self):
         headers = ["35=1"]

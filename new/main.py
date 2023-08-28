@@ -8,6 +8,7 @@ from fix_api_client import FixApiClient
 if os.name == 'nt':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
+
 async def main():
     pricing_connection = FIXConnection(credentials=pricing_session_credentials)
     trading_connection = FIXConnection(credentials=trading_session_credentials)
@@ -25,27 +26,27 @@ async def main():
     asyncio.create_task(pricing_connection.listen())
     asyncio.create_task(trading_connection.listen())
 
-    print("Sending heartbeat")
-    await fix_api_client.heartbeat()
+    print("Starting heartbeat system")
+    asyncio.create_task(fix_api_client.heartbeat())
 
     await asyncio.sleep(2)
 
-    print("=========")
-
-    print("Sending market order message")
-
-    await fix_api_client.new_order(symbol="EURUSD.x", side=1, order_type=1, lot_size=1000)
-    await asyncio.sleep(10)
-
-    print("=========")
-    
-
-    print("Sending market order message")
-
-    await fix_api_client.new_order(symbol="EURUSD.x", side=2, order_type=1, lot_size=1000)
-    await asyncio.sleep(2)
-
-    print("=========")
+    # print("=========")
+    #
+    # print("Sending market order message")
+    #
+    # await fix_api_client.new_order(symbol="EURUSD.x", side=1, order_type=1, lot_size=1000)
+    # await asyncio.sleep(10)
+    #
+    # print("=========")
+    #
+    #
+    # print("Sending market order message")
+    #
+    # await fix_api_client.new_order(symbol="EURUSD.x", side=2, order_type=1, lot_size=1000)
+    # await asyncio.sleep(2)
+    #
+    # print("=========")
 
 
     # print("Sending limit IOC order message")
