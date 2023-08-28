@@ -1,7 +1,6 @@
 import asyncio
 import socket
 
-import websockets
 import simplefix
 
 default_credentials = {
@@ -56,6 +55,7 @@ class FIXConnection:
 
     async def connect(self):
         print("Connecting...")
+        self.sock.setblocking(False)
         await self.loop.sock_connect(self.sock, (self.credentials["server"], self.credentials["port"]))
 
     async def listen(self):
@@ -69,7 +69,7 @@ class FIXConnection:
                 if not msg:
                     break
 
-                print(f"Received FIX message: {msg}")
+                print(f"Received {self.credentials['session']} FIX message: {msg}")
 
     def build_message(self, **kwargs):
         headers, parameters = self.get_message_details(**kwargs)

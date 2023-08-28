@@ -76,7 +76,7 @@ class FixApiClient:
         return self.pricing.send_message(headers=headers, parameters=parameters)
 
     # Market data requests
-    def market_data_request(self, symbol: str, request_id: str = None):
+    async def market_data_request(self, symbol: str, request_id: str = None):
         if not request_id:
             request_id = uuid4()
 
@@ -91,13 +91,14 @@ class FixApiClient:
             f"55={symbol}",
         ]
 
-        return self.pricing.send_message(headers=headers, parameters=parameters)
+        await self.pricing.send_message(headers=headers, parameters=parameters)
 
     async def new_order(self, symbol: str, request_id: str = None):
         if not request_id:
             request_id = uuid4()
 
         headers = ["35=D"]
+
         parameters = [
             f"11={request_id}",
             f"1={self.trading.credentials['account']}",
@@ -111,9 +112,23 @@ class FixApiClient:
 
         await self.trading.send_message(headers=headers, parameters=parameters)
 
-    def order_status(self, request_id: str = None):
-        headers = ["35=D"]
+    async def order_cancel(self, request_id: str, side: int):
+        headers = ["35=F"]
+
         parameters = [
+            f"11={request_id}",
+            f"1={self.trading.credentials['account']}",
+            f"41={request_id}",
+            f"54={side}",
+            f"60={datetime.utcnow().strftime('%Y%m%d-%H:%M:%S')}",
+        ]
+
+        await self.trading.send_message(headers=headers, parameters=parameters)
+
+    def order_status(self, request_id: str = None):
+        headers = ["35=H"]
+        parameters = [
+            f"37=1",
             f"11={request_id}",
             f"1={trading_session_credentials['account']}",
         ]

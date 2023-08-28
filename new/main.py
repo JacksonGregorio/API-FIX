@@ -1,9 +1,12 @@
 import asyncio
 import time
+import os
 
 from FIXConnection import FIXConnection, pricing_session_credentials, trading_session_credentials
 from fix_api_client import FixApiClient
 
+if os.name == 'nt':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 async def main():
     pricing_connection = FIXConnection(credentials=pricing_session_credentials)
@@ -25,10 +28,17 @@ async def main():
     print("Sending heartbeat")
     await fix_api_client.heartbeat()
 
-    time.sleep(2)
+    await asyncio.sleep(2)
 
-    print("Sending trade message")
-    await fix_api_client.new_order(request_id='test', symbol='EURUSD.x')
+    print("Sending new order message")
+    await fix_api_client.new_order(symbol="EURUSD.x", request_id='test2')
+
+    await asyncio.sleep(2)
+
+    await fix_api_client.order_cancel(request_id='test2', side=1)
+
+    await asyncio.sleep(2)
+
 
 if __name__ == '__main__':
     asyncio.run(main())
