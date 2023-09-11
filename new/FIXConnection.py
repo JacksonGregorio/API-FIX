@@ -4,14 +4,14 @@ import socket
 import simplefix
 
 default_credentials = {
-    "username": 100019,
-    "target_comp_id": "DCRD",
 }
 
 pricing_session_credentials = {
-    "server": "fixapidcrd.squaredfinancial.com",
-    "port": 10210,
-    "sender_comp_id": "MD019",
+    "username": "Jacksonlima",
+    "target_comp_id": "LMXBDM",
+    "server": "127.0.0.1",
+    "port": 40001,
+    "sender_comp_id": "Jacksonlima",
     "password": "87MTgLw345dfb!",
     "ssl_enabled": "N",
     "reset_on_logon": "Y",

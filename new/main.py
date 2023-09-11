@@ -15,10 +15,10 @@ async def main():
     message_handler = MessageHandler(price_listener=price_listener)
 
     pricing_connection = FIXConnection(credentials=pricing_session_credentials, message_handler=message_handler)
-    trading_connection = FIXConnection(credentials=trading_session_credentials, message_handler=message_handler)
+    # trading_connection = FIXConnection(credentials=trading_session_credentials, message_handler=message_handler)
 
     await pricing_connection.connect()
-    await trading_connection.connect()
+    # await trading_connection.connect()
 
     print("Start fix api client")
     fix_api_client = FixApiClient(pricing=pricing_connection, trading=trading_connection)
@@ -28,17 +28,17 @@ async def main():
 
     print("Start listening to messages...")
     asyncio.create_task(pricing_connection.listen())
-    asyncio.create_task(trading_connection.listen())
+    # asyncio.create_task(trading_connection.listen())
 
     print("Starting heartbeat system")
     asyncio.create_task(fix_api_client.heartbeat())
 
-    await fix_api_client.market_data_request(symbol="EURUSD.x")
+    await fix_api_client.market_data_request(symbol="EURUSD")
 
     last_bid_price = 0
     change_times = 0
 
-    order_bid_price = 0
+    # order_bid_price = 0
 
     while True:
         await asyncio.sleep(1)
@@ -48,17 +48,17 @@ async def main():
             print(f'Bid Price: {bid_price} ~ changed {change_times} times ~ last bid: {last_bid_price}')
 
             last_bid_price = pricing_connection.message_handler.price_listener.bid
-            change_times += 1
+            # change_times += 1
         
-        if change_times == 5:
-            order_bid_price = bid_price
-            print(f'Opening BUY order at {order_bid_price}')
-
-            asyncio.create_task(fix_api_client.new_order(symbol="EURUSD.x", side=1, order_type=1, lot_size=1000))
-
-            await asyncio.sleep(10)
-
-            asyncio.create_task(fix_api_client.new_order(symbol="EURUSD.x", side=2, order_type=1, lot_size=1000))
+        # if change_times == 5:
+        #     order_bid_price = bid_price
+        #     print(f'Opening BUY order at {order_bid_price}')
+        #
+        #     asyncio.create_task(fix_api_client.new_order(symbol="EURUSD.x", side=1, order_type=1, lot_size=1000))
+        #
+        #     await asyncio.sleep(10)
+        #
+        #     asyncio.create_task(fix_api_client.new_order(symbol="EURUSD.x", side=2, order_type=1, lot_size=1000))
 
     # print("=========")
     #
