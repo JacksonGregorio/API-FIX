@@ -7,11 +7,11 @@ default_credentials = {
 }
 
 pricing_session_credentials = {
-    "username": "Jacksonlima",
+    "username": "jacksonlima",
     "target_comp_id": "LMXBDM",
     "server": "127.0.0.1",
     "port": 40001,
-    "sender_comp_id": "Jacksonlima",
+    "sender_comp_id": "jacksonlima",
     "password": "87MTgLw345dfb!",
     "ssl_enabled": "N",
     "reset_on_logon": "Y",
