@@ -4,14 +4,16 @@ import socket
 import simplefix
 
 default_credentials = {
+    "username": 100019,
+    "account": 100019,
+    "target_comp_id": "DCRD",
 }
 
 pricing_session_credentials = {
-    "username": "jacksonlima",
-    "target_comp_id": "LMXBDM",
-    "server": "127.0.0.1",
-    "port": 40001,
-    "sender_comp_id": "jacksonlima",
+    **default_credentials,
+    "server": "fixapidcrd.squaredfinancial.com",
+    "port": 10210,
+    "sender_comp_id": "MD019",
     "password": "87MTgLw345dfb!",
     "ssl_enabled": "N",
     "reset_on_logon": "Y",
@@ -19,7 +21,7 @@ pricing_session_credentials = {
 }
 
 trading_session_credentials = {
-    "account": 100019,
+    **default_credentials,
     "port": 8080,
     "server": "127.0.0.1",
     "sender_comp_id": "TD019",
@@ -27,6 +29,9 @@ trading_session_credentials = {
     "ssl_enabled": "Y",
     "reset_on_logon": "N",
     "session": "trading",
+}
+
+default_credentials = {
 }
 
 

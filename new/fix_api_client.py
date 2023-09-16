@@ -132,6 +132,12 @@ class FixApiClient:
         """
         Send a new order request
 
+        # Sides:
+        # 1 - Buy | 2 - Sell
+
+        #  Order Types:
+        # 1 = Market | 2 - Limit | 3 - Stop
+
         Lot size must be multiplied by 100000
         1000 = 0.01
         10000000 = 100
