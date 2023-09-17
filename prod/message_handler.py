@@ -15,12 +15,13 @@ class MessageHandler:
         return None
     
     def on_receive_message(self, message):
-        print(f"Received FIX message: {message}")
         message_type = message.get(35)
         function = self.get_function(message_type.decode('utf-8'))
 
         if function:
             function(message)
+        else:
+            print(f"Received FIX message: {message}")
     
 
     def on_market_data_response(self, message):

@@ -40,7 +40,7 @@ class FIXConnection:
         self.message_handler = message_handler
 
         self.credentials = credentials
-        self.username = default_credentials["username"]
+        self.username = credentials["username"]
         self.target_comp_id = default_credentials["target_comp_id"]
 
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

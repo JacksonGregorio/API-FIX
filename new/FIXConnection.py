@@ -31,9 +31,6 @@ trading_session_credentials = {
     "session": "trading",
 }
 
-default_credentials = {
-}
-
 
 class FIXConnection:
     def __init__(self, credentials, message_handler):

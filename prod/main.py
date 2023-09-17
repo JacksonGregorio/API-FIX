@@ -33,32 +33,32 @@ async def main():
     print("Starting heartbeat system")
     asyncio.create_task(fix_api_client.heartbeat())
 
-    await fix_api_client.market_data_request(symbol="EURUSD")
+    await fix_api_client.market_data_request(symbol="EURUSD.x")
 
     last_bid_price = 0
     change_times = 0
 
-    # order_bid_price = 0
-
     while True:
-        await asyncio.sleep(1)
-        # bid_price = pricing_connection.message_handler.price_listener.bid
+        await asyncio.sleep(.5)
+        bid_price = pricing_connection.message_handler.price_listener.bid
+        ask_price = pricing_connection.message_handler.price_listener.ask
         #
-        # if bid_price != last_bid_price:
-        #     print(f'Bid Price: {bid_price} ~ changed {change_times} times ~ last bid: {last_bid_price}')
-        #
-        #     last_bid_price = pricing_connection.message_handler.price_listener.bid
-            # change_times += 1
+        if bid_price != last_bid_price:
+            print(f'Bid Price: {bid_price} ~ Ask Price: {ask_price} ~ changed {change_times} times ~ last bid: {last_bid_price}')
         
-        # if change_times == 5:
-        #     order_bid_price = bid_price
-        #     print(f'Opening BUY order at {order_bid_price}')
-        #
-        #     asyncio.create_task(fix_api_client.new_order(symbol="EURUSD.x", side=1, order_type=1, lot_size=1000))
-        #
-        #     await asyncio.sleep(10)
-        #
-        #     asyncio.create_task(fix_api_client.new_order(symbol="EURUSD.x", side=2, order_type=1, lot_size=1000))
+            last_bid_price = pricing_connection.message_handler.price_listener.bid
+            change_times += 1
+        
+        if change_times == 5:
+            print(f'Opening BUY order at Bid price: {bid_price} ~ Ask Price: {ask_price}')
+        
+            asyncio.create_task(fix_api_client.new_order(symbol="EURUSD.x", side=1, order_type=1, lot_size=1000))
+        
+            await asyncio.sleep(5)
+
+            print(f'CLOSING BUY order at Bid price: {bid_price} ~ Ask Price: {ask_price}')
+        
+            asyncio.create_task(fix_api_client.new_order(symbol="EURUSD.x", side=2, order_type=1, lot_size=1000))
 
     # print("=========")
     #
